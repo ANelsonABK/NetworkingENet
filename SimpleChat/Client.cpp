@@ -4,11 +4,12 @@ using namespace std;
 
 ENetAddress address;
 ENetPeer* peer; /* server connecting to */
+static std::atomic<bool> isRunning(false);
 
 Client::Client(int id, string username)
 	: m_id(id)
 	, m_username(username)
-	, m_isRunning(true)
+	//, m_isRunning(true)
 {
 	m_client = nullptr;
 }
@@ -62,6 +63,7 @@ void Client::ConnectToServer()
 	}
 
 	//SendPacket(peer, m_username.c_str());
+	isRunning.store(true);
 }
 
 /*
@@ -84,7 +86,7 @@ Check to see if client recieves any messages
 void Client::MessageLoop()
 {
 	// Check for messages while user hasn't quit chat
-	while (m_isRunning)
+	while (isRunning.load())
 	{
 		ENetEvent event;
 		while (enet_host_service(m_client, &event, 1000) > 0) {
@@ -117,7 +119,7 @@ void Client::InputLoop(ENetPeer* peer)
 {
 	string msg = "";
 	cin.ignore();
-	while (GetIsRunning())
+	while (isRunning.load())
 	{
 		// Get user's message
 		// may have to move line outside while loop
@@ -126,7 +128,7 @@ void Client::InputLoop(ENetPeer* peer)
 		// Check if user typed 'quit' to quit the chat
 		if (msg == "quit")
 		{
-			SetIsRunning();
+			isRunning.store(false);
 		}
 
 		// TODO: Display the message

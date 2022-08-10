@@ -3,13 +3,14 @@
 #include <thread>
 #include <enet/enet.h>
 #include <string>
+//#include <mutex>
+//#include <atomic>
 
 class Client
 {
 	int m_id;
 	std::string m_username;
-	bool m_isRunning;
-
+	
 public:
 	Client(int id, std::string username);
 	~Client();
@@ -17,8 +18,8 @@ public:
 	bool CreateClient();
 	void SetUserName(std::string name) { m_username = name; }
 	int GetClientID() { return m_id; }
-	bool GetIsRunning() { return m_isRunning; }
-	void SetIsRunning() { m_isRunning = !m_isRunning; }
+	//bool GetIsRunning() { return m_isRunning; }
+	//void SetIsRunning() { m_isRunning = !m_isRunning; }
 	ENetHost* GetClient() { return m_client; }
 
 	std::string GetUserName() { return m_username; }
