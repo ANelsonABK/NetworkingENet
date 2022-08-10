@@ -12,7 +12,7 @@ public:
 	Server(bool isClientRunning);
 	~Server();
 
-	bool CreateServer(ENetAddress* address);
+	bool CreateServer();
 	void ConnectClient(ENetEvent event, ENetAddress address);
 	void RecieveMessage(ENetEvent event);
 	void DisconnectClient(ENetEvent event);

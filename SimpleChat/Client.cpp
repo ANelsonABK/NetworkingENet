@@ -3,6 +3,7 @@
 using namespace std;
 
 ENetAddress address;
+ENetPeer* peer; /* server connecting to */
 
 Client::Client(int id, string username)
 	: m_id(id)
@@ -14,10 +15,10 @@ Client::Client(int id, string username)
 
 Client::~Client()
 {
-	if (m_client != nullptr)
-	{
-		m_client = nullptr;
-	}
+	//if (m_client != nullptr)
+	//{
+	//	m_client = nullptr;
+	//}
 }
 
 bool Client::CreateClient()
@@ -31,10 +32,42 @@ bool Client::CreateClient()
 	return m_client != nullptr;
 }
 
+void Client::ConnectToServer()
+{
+	/* Initialize address to connect to */
+	ENetEvent event;
+	enet_address_set_host(&address, "127.0.0.1");
+	address.port = 1234;
+
+	// Initialize the peer and connect to peer
+	peer = enet_host_connect(GetClient(), &address, 2, 0);
+
+	if (peer == nullptr)
+	{
+		fprintf(stderr,
+			"No available peers for initiating an ENet connection.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Check if server contacted client back
+	if (enet_host_service(GetClient(), &event, 5000) > 0
+		&& event.type == ENET_EVENT_TYPE_CONNECT)
+	{
+		cout << "Connection to 127.0.0.1:1234 succeeded." << endl;
+	}
+	else
+	{
+		enet_peer_reset(peer);
+		cout << "Connection to 127.0.0.1:1234 failed." << endl;
+	}
+
+	//SendPacket(peer, m_username.c_str());
+}
+
 /*
 Sends a packet with data to a peer.
 */
-void Client::SendPacket(ENetPeer* peer, const char* data, int channelID = 0)
+void Client::SendPacket(ENetPeer* peer, const char* data, int channelID)
 {
 	ENetPacket* packet = enet_packet_create(data, 
 		strlen(data) + 1, 
@@ -42,6 +75,7 @@ void Client::SendPacket(ENetPeer* peer, const char* data, int channelID = 0)
 
 	// Send the packet to the peer on the chane
 	enet_peer_send(peer, channelID, packet);
+	enet_host_flush(m_client);
 }
 
 /*
@@ -53,25 +87,26 @@ void Client::MessageLoop()
 	while (m_isRunning)
 	{
 		ENetEvent event;
-
-		while (enet_host_service(m_client, &event, 0) > 0) {
+		while (enet_host_service(m_client, &event, 1000) > 0) {
 			switch (event.type)
 			{
 			    case ENET_EVENT_TYPE_RECEIVE:
 			    {
 				    //Display the message received from the server
 				    /* Create a reliable packet */
-				    ENetPacket* packet = enet_packet_create(
-						event.packet->data,
-					    strlen((char*)event.packet->data) + 1,
-					    ENET_PACKET_FLAG_RELIABLE);
+				  //  ENetPacket* packet = enet_packet_create(
+						//event.packet->data,
+					 //   strlen((char*)event.packet->data) + 1,
+					 //   ENET_PACKET_FLAG_RELIABLE);
 
-				    enet_host_broadcast(m_client, 0, packet);
+				  //  enet_host_broadcast(m_client, 0, packet);
+
+					cout << event.packet->data << endl;
 
 			        /* Clean up the packet now that we're done using it. */
 					enet_packet_destroy(event.packet);
 
-				    enet_host_flush(m_client);
+				    //enet_host_flush(m_client);
 			    }
 			}
 		}
@@ -111,15 +146,12 @@ int main(int argc, char** argv)
 	atexit(enet_deinitialize);
 
 	string userName = "User";
-	//string userName2 = "User2";
 
 	// Ask user to input their name
 	cout << "Weclome to LUUM! Please enter your name:\n";
 	cin >> userName;
 
-	// Wait for client to connect
-	ENetEvent event;
-	ENetPeer* peer; /* server connecting to */
+	// Create the client
 	Client client = Client(1, userName);
 
 	if (!client.CreateClient())
@@ -129,37 +161,11 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	// TODO: Launch a client
+	// TODO: move this to server so it announces when a new user joins
 	cout << userName << " has joined.\n";
 
-	/* Initialize address to connect to */
-	enet_address_set_host(&address, "127.0.0.1");
-	address.port = 1234;
-
-	// Initialize the peer and connect to peer
-	peer = enet_host_connect(client.GetClient(), &address, 2, 0);
-
-	if (peer == nullptr)
-	{
-		fprintf(stderr, 
-			"No available peers for initiating an ENet connection.\n");
-		return EXIT_FAILURE;
-	}
-
-	// Check if server contacted client back
-	if (enet_host_service(client.GetClient(), &event, 5000) > 0
-		&& event.type == ENET_EVENT_TYPE_CONNECT)
-	{
-		cout << "Connection to 127.0.0.1:1234 succeeded." << endl;
-	}
-	else
-	{
-		enet_peer_reset(peer);
-		cout << "Connection to 127.0.0.1:1234 failed." << endl;
-		return EXIT_SUCCESS;
-	}
-
-	client.SendPacket(peer, userName.c_str());
+	// Connect the client to the server
+	client.ConnectToServer();
 
 	// create thread that waits for messages
 	thread checkMsgThread(&Client::MessageLoop, client);
@@ -171,21 +177,12 @@ int main(int argc, char** argv)
 	checkInputThread.join();
 	checkMsgThread.join();
 
-	//// Disconnect from server after user quits
-	//while (enet_host_service(client.GetClient(), &event, 3000) > 0)
-	//{
-	//	switch (event.type)
-	//	{
-	//	case ENET_EVENT_TYPE_RECEIVE:
-	//		enet_packet_destroy(event.packet);
-	//		break;
-	//	case ENET_EVENT_TYPE_DISCONNECT:
-	//		cout << "Disconnection succeeded." << endl;
-	//		break;
-	//	default:
-	//		break;
-	//	}
-	//}
+	cout << userName << " has left. Goodbye!\n";
+
+	if (client.GetClient() != nullptr)
+	{
+		enet_host_destroy(client.GetClient());
+	}
 
 	return EXIT_SUCCESS;
 }

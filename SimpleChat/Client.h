@@ -22,9 +22,10 @@ public:
 	ENetHost* GetClient() { return m_client; }
 
 	std::string GetUserName() { return m_username; }
-	void SendPacket(ENetPeer* peer, const char* data, int channelID);
+	void SendPacket(ENetPeer* peer, const char* data, int channelID = 0);
 	void MessageLoop();
 	void InputLoop(ENetPeer* peer);
+	void ConnectToServer();
 
 protected:
 	ENetHost* m_client;
