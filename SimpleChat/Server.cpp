@@ -58,7 +58,7 @@ void Server::ConnectClient(ENetEvent event, ENetAddress address)
 	//}
 }
 
-void Server::RecieveMessage(ENetEvent event)
+void Server::ReceiveMessage(ENetEvent event)
 {
 	cout << "A packet of length "
 		 << event.packet->dataLength << endl
@@ -105,7 +105,7 @@ void Server::RunServerThread()
 				ConnectClient(event, address);
 				break;
 			case ENET_EVENT_TYPE_RECEIVE:
-				RecieveMessage(event);
+				ReceiveMessage(event);
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				DisconnectClient(event);

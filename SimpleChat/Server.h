@@ -14,7 +14,7 @@ public:
 
 	bool CreateServer();
 	void ConnectClient(ENetEvent event, ENetAddress address);
-	void RecieveMessage(ENetEvent event);
+	void ReceiveMessage(ENetEvent event);
 	void DisconnectClient(ENetEvent event);
 
 	bool GetIsClientRunning() { return m_isServerRunning; }
