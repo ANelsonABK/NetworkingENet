@@ -2,14 +2,24 @@
 
 using namespace std;
 
+/* Default constructor */
+//Server::Server()
+//	: _numMaxConnections(32)
+//	, _numCurrConections(0)
+//	, _randomNumber(0)
+//	, _isServer(false)
+//{
+//	_server = nullptr;
+//}
+
 Server::Server(int numConnections)
 	: _numMaxConnections(numConnections)
 	, _numCurrConections(0)
-	, _server(nullptr)
+	//, _server(nullptr)
 	, _randomNumber(0)
 	, _isServer(false)
 {
-
+	_server = nullptr;
 }
 
 Server::~Server()
@@ -83,7 +93,7 @@ void Server::BroadcastPlayerPacket()
 {
 	PlayerPacket* playerPacket = new PlayerPacket();
 	playerPacket->playerId = _numCurrConections;
-	playerPacket->msg = "Welcome Player " + _numCurrConections;
+	playerPacket->message = "Welcome Player " + _numCurrConections;
 
 	ENetPacket* packet = enet_packet_create(playerPacket,
 		sizeof(*playerPacket),
@@ -100,10 +110,7 @@ void Server::BroadcastIsCorrectPacket()
 {
 	IsCorrectPacket* correctPacket = new IsCorrectPacket();
 
-	
-
 	// TODO: Broadcast the result
-
 
 	enet_host_flush(_server);
 	delete correctPacket;

@@ -24,28 +24,28 @@ int main(int argc, char** argv)
 	if (userInput == 1)
 	{
 		// Create a server with two clients
-		Server server = Server(2);
-		if (!server.CreateServer())
-		{
-			fprintf(stderr,
-				"An error occurred while initializing ENet.\n");
-			return EXIT_FAILURE;
-		}
-
-		server.SetServerStatus();
-
-		// TODO: wait for max players to join
-		cout << "Waiting for players to join...\n";
-		//while (server.GetCurrNumConnections() <
-		//	server.GetMaxNumConnections())
+		Server server = Server::Server();
+		//if (!server.CreateServer())
 		//{
-		//	// Do something
+		//	fprintf(stderr,
+		//		"An error occurred while initializing ENet.\n");
+		//	return EXIT_FAILURE;
 		//}
 
-		// Launch the game
-		thread serverThread(&Server::ServerProcessPackets, server);
+		//server.SetServerStatus();
 
-		serverThread.join();
+		//// TODO: wait for max players to join
+		//cout << "Waiting for players to join...\n";
+		////while (server.GetCurrNumConnections() <
+		////	server.GetMaxNumConnections())
+		////{
+		////	// Do something
+		////}
+
+		//// Launch the game
+		//thread serverThread(&Server::ServerProcessPackets, server);
+
+		//serverThread.join();
 
 		if (server.GetServer() != nullptr)
 		{
@@ -55,34 +55,34 @@ int main(int argc, char** argv)
 	else if (userInput == 2)
 	{
 
-		// Create a client
-		Client client = Client();
-		if (!client.CreateClient())
-		{
-			fprintf(stderr,
-				"An error occurred while initializing ENet.\n");
-			return EXIT_FAILURE;
-		}
+		//// Create a client
+		//Client client = Client();
+		//if (!client.CreateClient())
+		//{
+		//	fprintf(stderr,
+		//		"An error occurred while initializing ENet.\n");
+		//	return EXIT_FAILURE;
+		//}
 
-		// Attempt to connect to server
-		if (!client.ConnectToServer())
-		{
-			fprintf(stderr,
-				"No available peers for initiating an ENet connection.\n");
-			return EXIT_FAILURE;
-		}
+		//// Attempt to connect to server
+		//if (!client.ConnectToServer())
+		//{
+		//	fprintf(stderr,
+		//		"No available peers for initiating an ENet connection.\n");
+		//	return EXIT_FAILURE;
+		//}
 
-		// Start threads for packets and input
-		thread inputThread(&Client::InputLoop, client);
-		thread packetThred(&Client::ClientProcessPackets, client);
+		//// Start threads for packets and input
+		//thread inputThread(&Client::InputLoop, client);
+		//thread packetThred(&Client::ClientProcessPackets, client);
 
-		inputThread.join();
-		packetThred.join();
+		//inputThread.join();
+		//packetThred.join();
 
-		if (client.GetClient() != nullptr)
-		{
-			enet_host_destroy(client.GetClient());
-		}
+		//if (client.GetClient() != nullptr)
+		//{
+		//	enet_host_destroy(client.GetClient());
+		//}
 	}
 	else
 	{

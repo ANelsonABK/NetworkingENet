@@ -13,7 +13,8 @@ class Server {
 	std::atomic<bool> _isServer;
 
 public:
-	Server(int numConnections);
+	//Server();
+	Server(int numConnections = 32);
 	~Server();
 
 	// Functions
@@ -33,6 +34,4 @@ public:
 		bool serverStatus = _isServer.load();
 		_isServer.store(!serverStatus);
 	}
-	//int GetMaxNumConnections() { return _numMaxConnections; }
-	//int GetCurrNumConnections() { return _numCurrConections; }
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 enum PacketHeaderTypes
 {
@@ -24,7 +25,7 @@ struct IsCorrectPacket : public GamePacket
 
 	int playerId = 0;
 	int winnerId = -1;
-	int correctNumber;
+	int correctNumber = 0;
 	bool isCorrect = false;
 };
 
@@ -37,7 +38,7 @@ struct PlayerPacket : public GamePacket
 	}
 
 	int playerId = 0;
-	string msg = "";
+	std::string message = "";
 };
 
 /* Packet to send a player's guess */

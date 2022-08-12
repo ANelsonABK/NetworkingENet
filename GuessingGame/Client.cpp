@@ -141,10 +141,10 @@ void Client::InputLoop()
 }
 
 /* Send a packet with the player's guess to the server */
-void Client::SendPacket(string guess)
+void Client::SendPacket(std::string guess)
 {
 	PlayerGuessPacket* GuessPacket = new PlayerGuessPacket();
-	GuessPacket->playerId = _playerId;
+	//GuessPacket->playerId = _playerId;
 	GuessPacket->playerGuess = atoi(guess.c_str());
 
 	ENetPacket* packet = enet_packet_create(
@@ -152,7 +152,7 @@ void Client::SendPacket(string guess)
 		sizeof(*GuessPacket),
 		ENET_PACKET_FLAG_RELIABLE);
 
-	enet_peer_send(_peer, 1, packet);
-	enet_host_flush(_client);
+	//enet_peer_send(_peer, 1, packet);
+	//enet_host_flush(_client);
 	delete GuessPacket;
 }

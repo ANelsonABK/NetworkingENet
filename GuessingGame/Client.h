@@ -4,7 +4,7 @@
 #include <iostream>
 #include <thread>
 #include <atomic>
-#include <string>
+//#include <string>
 
 class Client {
 
@@ -25,6 +25,6 @@ public:
 	void ClientProcessPackets();
 	void HandleReceivePacket(ENetEvent& event);
 	void InputLoop();
-	void SendPacket(string guess);
+	void SendPacket(std::string guess);
 	ENetHost* GetClient() { return _client; }
 };
