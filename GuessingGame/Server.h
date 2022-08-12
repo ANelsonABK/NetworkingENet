@@ -24,9 +24,14 @@ public:
 	void HandleReceivePacket(const ENetEvent& event);
 	void StartGame();
 
-	void SetRandomNumber() { _randomNumber = (rand() % 100); }
+	void SetRandomNumber() { _randomNumber = (1 + rand() % 100); }
 	int GetRandomNumber() { return _randomNumber; }
 	ENetHost* GetServer() { return _server; }
+
+	int GetCurrConnections() { return _currConnections; }
+	int GetMaxConnections() { return _maxConnections; }
+
+	void WaitForPlayers();
 
 protected:
 	ENetHost* _server;

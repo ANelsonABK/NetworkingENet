@@ -1,9 +1,12 @@
 #include "Server.h"
 #include <atomic>
+#include <chrono>
+#include <thread>
 
 std::atomic<bool> isRunning(false);
 
 using namespace std;
+using namespace std::chrono_literals;
 
 Server::Server(int numConnections)
 {
@@ -146,10 +149,29 @@ void Server::DisconnectClient(ENetEvent event)
 	isRunning.store(false);
 }
 
+void Server::WaitForPlayers()
+{
+	// TODO: add a timeout if it takes too long for a player to join
+	while (GetCurrConnections() < GetMaxConnections())
+	{
+		std::this_thread::sleep_for(1s);
+	}
+}
+
 /* Start the game and broadcast to players that it has started. */
 void Server::StartGame()
 {
+	isRunning.store(true);
 	SetRandomNumber();
 
-	// TODO: broadcast to players
+	// broadcast to players that game is starting
+	string startMsg = "Start guessing a number between 1 and 100!\n";
+	ENetPacket* packet = enet_packet_create(&startMsg, 
+		strlen(startMsg.c_str()),
+		ENET_PACKET_FLAG_RELIABLE);
+
+	enet_host_broadcast(_server, 0, packet);
+
+	enet_packet_destroy(packet);
+	enet_host_flush(_server);
 }

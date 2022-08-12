@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 	cout << "Please make a selection: \n";
 	cout << "1) Create Server\n";
 	cout << "2) Create Client\n";
+	cout << "3) Exit\n";
 
 	int userInput;
 	cin >> userInput;
@@ -32,15 +33,13 @@ int main(int argc, char** argv)
 			return EXIT_FAILURE;
 		}
 
-		// TODO: wait for max players to join
+		// wait for max players to join
 		cout << "Waiting for players to join...\n";
-		//while (server.GetCurrNumConnections() <
-		//	server.GetMaxNumConnections())
-		//{
-		//	// Do something
-		//}
+		thread waitThread(&Server::WaitForPlayers, server);
+		waitThread.join();
 
-		// TODO: Launch the game
+		// Launch the game
+		server.StartGame();
 		thread serverThread(&Server::ServerProcessPackets, server);
 
 		serverThread.join();
@@ -81,6 +80,10 @@ int main(int argc, char** argv)
 		{
 			enet_host_destroy(client.GetClient());
 		}
+	}
+	else if (userInput == 3)
+	{
+		cout << "Goodbye.\n";
 	}
 	else
 	{
