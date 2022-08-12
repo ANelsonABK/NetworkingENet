@@ -2,18 +2,14 @@
 #include "Packets.h"
 #include "enet/enet.h"
 #include <iostream>
-#include <atomic>
 
-class Server {
-
-	int _numMaxConnections;
-	int _numCurrConections;
-	ENetHost* _server;
+class Server
+{
+	int _maxConnections;
+	int _currConnections;
 	int _randomNumber;
-	std::atomic<bool> _isServer;
 
 public:
-	//Server();
 	Server(int numConnections = 32);
 	~Server();
 
@@ -26,12 +22,12 @@ public:
 	void BroadcastIsCorrectPacket();
 	void BroadcastPlayerPacket();
 	void HandleReceivePacket(const ENetEvent& event);
+	void StartGame();
 
 	void SetRandomNumber() { _randomNumber = (rand() % 100); }
 	int GetRandomNumber() { return _randomNumber; }
 	ENetHost* GetServer() { return _server; }
-	void SetServerStatus() {
-		bool serverStatus = _isServer.load();
-		_isServer.store(!serverStatus);
-	}
+
+protected:
+	ENetHost* _server;
 };

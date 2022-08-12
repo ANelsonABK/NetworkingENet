@@ -1,14 +1,17 @@
 #include "Client.h"
+#include <atomic>
+
+std::atomic<bool> quitGame(false); /* keeps player client up */
+std::atomic<bool> canAnswer(true); /* lets player know they can answer */
 
 using namespace std;
 
 Client::Client()
-	: _playerId(0)
-	, _quitGame(false)
-	, _client(nullptr)
-	, _peer(nullptr)
 {
-
+	_playerId = 0;
+	_clientId = 0;
+	_client = nullptr;
+	_peer = nullptr;
 }
 
 Client::~Client()
@@ -41,7 +44,7 @@ bool Client::ConnectToServer()
 void Client::ClientProcessPackets()
 {
 	// Wait for a response while user is playing and can't answer
-	while (!_quitGame.load() && !_canAnswer.load())
+	while (!quitGame.load() && !canAnswer.load())
 	{
 		ENetEvent event;
 		while (enet_host_service(_client, &event, 1000) > 0)
@@ -91,13 +94,13 @@ void Client::HandleReceivePacket(ENetEvent& event)
 					}
 
 					// Stop the game
-					_quitGame.store(true);
+					quitGame.store(true);
 				}
 				else 
 				{
 					// Let the player guess again
 					cout << "Incorrect. Try again: \n";
-					_canAnswer.store(true);
+					canAnswer.store(true);
 				}
 			}
 		}
@@ -121,21 +124,21 @@ void Client::InputLoop()
 	cin.ignore();
 
 	/* While player is playing and has not answered */
-	while (!_quitGame.load() && _canAnswer.load())
+	while (!quitGame.load() && canAnswer.load())
 	{
 		// Get a response from the user
 		std::getline(cin, response);
 
 		if (response == "quit")
 		{
-			_quitGame.store(true);
+			quitGame.store(true);
 
 			// TODO: Send to server that a player quit
 		}
 		else
 		{
 			// Pack response and send it to server
-			_canAnswer.store(false);
+			canAnswer.store(false);
 		}
 	}
 }

@@ -1,40 +1,30 @@
 #include "Server.h"
+#include <atomic>
+
+std::atomic<bool> isRunning(false);
 
 using namespace std;
 
-/* Default constructor */
-//Server::Server()
-//	: _numMaxConnections(32)
-//	, _numCurrConections(0)
-//	, _randomNumber(0)
-//	, _isServer(false)
-//{
-//	_server = nullptr;
-//}
-
 Server::Server(int numConnections)
-	: _numMaxConnections(numConnections)
-	, _numCurrConections(0)
-	//, _server(nullptr)
-	, _randomNumber(0)
-	, _isServer(false)
 {
+	_maxConnections = numConnections;
+	_currConnections = 0;
 	_server = nullptr;
+	_randomNumber = 0;
 }
 
 Server::~Server()
 {
-
 }
 
-
+/* Attempt to create a server for the guessing game. */
 bool Server::CreateServer()
 {
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
 	address.port = 1234;
 
-	_server = enet_host_create(&address, _numMaxConnections, 2, 0, 0);
+	_server = enet_host_create(&address, _maxConnections, 2, 0, 0);
 
 	return _server != nullptr;
 }
@@ -42,7 +32,7 @@ bool Server::CreateServer()
 void Server::ServerProcessPackets()
 {
 	// Process packets while server is alive
-	while (_isServer.load())
+	while (isRunning.load())
 	{
 		ENetEvent event;
 		while (enet_host_service(_server, &event, 1000) > 0)
@@ -51,18 +41,18 @@ void Server::ServerProcessPackets()
 			{
 			    case ENET_EVENT_TYPE_CONNECT:
 			    {
-					// TODO: let client know connection was successful
+				    // TODO: let client know connection was successful
 			    }
-				case ENET_EVENT_TYPE_RECEIVE:
-				{
-					HandleReceivePacket(event);
-					break;
-				}
-				case ENET_EVENT_TYPE_DISCONNECT:
-				{
-					// Disconnect clients from server
-					DisconnectClient(event);
-				}
+			    case ENET_EVENT_TYPE_RECEIVE:
+			    {
+				    HandleReceivePacket(event);
+				    break;
+			    }
+			    case ENET_EVENT_TYPE_DISCONNECT:
+			    {
+				    // Disconnect clients from server
+				    DisconnectClient(event);
+			    }
 			}
 		}
 	}
@@ -71,19 +61,19 @@ void Server::ServerProcessPackets()
 /* Attempt to connect a client to the server */
 void Server::ConnectClient(ENetEvent event)
 {
-	if (_numCurrConections == _numMaxConnections)
+	if (_currConnections == _maxConnections)
 	{
 		// TODO: Tell client it can't connect
 	}
-	else 
+	else
 	{
 		cout << "A new client connected from "
-			 << event.peer->address.host
-			 << ":" << event.peer->address.port
-			 << endl;
-		_numCurrConections++;
+			<< event.peer->address.host
+			<< ":" << event.peer->address.port
+			<< endl;
+		_currConnections++;
 		event.peer->data = (void*)("Client Information");
-		
+
 		// TODO: Broadcast a welcome player
 	}
 }
@@ -92,8 +82,8 @@ void Server::ConnectClient(ENetEvent event)
 void Server::BroadcastPlayerPacket()
 {
 	PlayerPacket* playerPacket = new PlayerPacket();
-	playerPacket->playerId = _numCurrConections;
-	playerPacket->message = "Welcome Player " + _numCurrConections;
+	playerPacket->playerId = _currConnections;
+	playerPacket->message = "Welcome Player " + _currConnections;
 
 	ENetPacket* packet = enet_packet_create(playerPacket,
 		sizeof(*playerPacket),
@@ -144,7 +134,7 @@ void Server::HandleReceivePacket(const ENetEvent& event)
 /* Handle when a client disconnects */
 void Server::DisconnectClient(ENetEvent event)
 {
-	_numCurrConections--;
+	_currConnections--;
 	cout << (char*)event.peer->data << " disconnected.\n";
 
 	/* Reset the peer's client information */
@@ -153,5 +143,13 @@ void Server::DisconnectClient(ENetEvent event)
 	// TODO: notify remaining player game ended
 
 	// Close the server
-	SetServerStatus();
+	isRunning.store(false);
+}
+
+/* Start the game and broadcast to players that it has started. */
+void Server::StartGame()
+{
+	SetRandomNumber();
+
+	// TODO: broadcast to players
 }
